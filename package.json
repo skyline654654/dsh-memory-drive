@@ -1,0 +1,70 @@
+{
+  "name": "dsh-memory-drive",
+  "version": "0.1.0",
+  "description": "DSH Memory Drive: manage memory files from DSH memory plugins in Settings, and sync them to cloud drives (Huawei/Quark/Baidu/OneDrive/Aliyun, local sync folders or WebDAV). 云盘记忆同步与记忆文件管理。",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "memory",
+    "cloud-sync",
+    "huaweicloud",
+    "quark",
+    "baidu",
+    "onedrive"
+  ],
+  "license": "MIT",
+  "author": "skyline654654",
+  "icon": "./icon.svg",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyline654654/dsh-memory-drive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skyline654654/dsh-memory-drive/issues"
+  },
+  "homepage": "https://github.com/skyline654654/dsh-memory-drive#readme",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20",
+    "dsh": "^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1 || ^0.2.2-rc.1"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ],
+      "external": [
+        "@deepseek-ai/dsh-client-ui-primitives"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-client-ui-plugin-manager": "^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1 || ^0.2.2-rc.1"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "pack:tgz": "npm pack --pack-destination ."
+  }
+}
