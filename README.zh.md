@@ -54,7 +54,7 @@
 ## 开发与测试
 
 ```sh
-node --test test/
+npm test
 node --check index.js
 ```
 
