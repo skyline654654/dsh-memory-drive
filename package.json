@@ -1,6 +1,6 @@
 {
   "name": "dsh-memory-drive",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DSH Memory Drive: manage memory files from DSH memory plugins in Settings, and sync them to cloud drives (Huawei/Quark/Baidu/OneDrive/Aliyun, local sync folders or WebDAV). 云盘记忆同步与记忆文件管理。",
   "keywords": [
     "dsh",
@@ -37,6 +37,7 @@
     "lib",
     "cordis.patch.yml",
     "icon.svg",
+    "assets",
     "README.md",
     "README.zh.md",
     "LICENSE"
@@ -53,9 +54,6 @@
       "platform": "web",
       "inject": [
         "@deepseek-ai/dsh-client-ui-plugin-manager"
-      ],
-      "external": [
-        "@deepseek-ai/dsh-client-ui-primitives"
       ]
     }
   },
@@ -64,7 +62,7 @@
     "@deepseek-ai/dsh-client-ui-plugin-manager": "^0.1.7-rc.1 || ^0.2.0-rc.1 || ^0.2.1-rc.1 || ^0.2.2-rc.1"
   },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test --test-force-exit",
     "pack:tgz": "npm pack --pack-destination ."
   }
 }
