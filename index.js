@@ -12,7 +12,9 @@ import { runSync } from './lib/sync.js'
 
 export const name = 'memory-drive'
 
-const VERSION = '0.1.0'
+const VERSION = (() => {
+  try { return JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version } catch { return '0.0.0' }
+})()
 
 const DEFAULT_CONFIG = {
   version: 1,
@@ -184,7 +186,8 @@ export function apply(ctx, rawConfig) {
     try { clearTimeout(pullTimer) } catch {}
     pullTimer = setTimeout(() => {
       pullTimer = null
-      if (!disposed && readConfig().autoPullOnStart) doSync('pull').catch(() => {})
+      const cfgNow = readConfig()
+      if (!disposed && cfgNow.autoPullOnStart && cfgNow.syncProviderId) doSync('pull').catch(() => {})
     }, delay == null ? (readConfig().pullOnStartDelayMs || 12000) : delay)
     if (pullTimer && typeof pullTimer.unref === 'function') pullTimer.unref()
   }
@@ -193,10 +196,11 @@ export function apply(ctx, rawConfig) {
     if (disposed) return
     try { clearTimeout(pushTimer) } catch {}
     const cfg = readConfig()
-    if (!cfg.autoPushOnTurnStop) return
+    if (!cfg.autoPushOnTurnStop || !cfg.syncProviderId) return
     pushTimer = setTimeout(() => {
       pushTimer = null
-      if (!disposed && readConfig().autoPushOnTurnStop) doSync('push', { backup: true }).catch(() => {})
+      const cfgNow = readConfig()
+      if (!disposed && cfgNow.autoPushOnTurnStop && cfgNow.syncProviderId) doSync('push', { backup: true }).catch(() => {})
     }, cfg.pushDebounceMs || 30000)
     if (pushTimer && typeof pushTimer.unref === 'function') pushTimer.unref()
   }
@@ -291,7 +295,8 @@ export function apply(ctx, rawConfig) {
         const sourceId = url.searchParams.get('source') || ''
         const rootId = url.searchParams.get('root') || ''
         const rel = url.searchParams.get('path') || ''
-        const resolved = resolveFile(cfg, sourceId, rootId, rel)
+        let resolved
+        try { resolved = resolveFile(cfg, sourceId, rootId, rel) } catch (error) { return json(res, 400, { ok: false, error: error.message }) }
         let st
         try { st = fs.statSync(resolved.absPath) } catch { return json(res, 404, { ok: false, error: 'file not found' }) }
         if (!st.isFile()) return json(res, 404, { ok: false, error: 'not a file' })
@@ -311,7 +316,8 @@ export function apply(ctx, rawConfig) {
         const rel = String(body.path || '')
         const content = typeof body.content === 'string' ? body.content : ''
         const baseHash = typeof body.baseHash === 'string' ? body.baseHash : ''
-        const resolved = resolveFile(cfg, sourceId, rootId, rel)
+        let resolved
+        try { resolved = resolveFile(cfg, sourceId, rootId, rel) } catch (error) { return json(res, 400, { ok: false, error: error.message }) }
         let currentHash = ''
         try { currentHash = sha256(fs.readFileSync(resolved.absPath)) } catch {}
         if (baseHash && currentHash && baseHash !== currentHash) {
@@ -330,7 +336,8 @@ export function apply(ctx, rawConfig) {
         const rootId = url.searchParams.get('root') || ''
         const rel = url.searchParams.get('path') || ''
         if (url.searchParams.get('confirm') !== '1') return json(res, 400, { ok: false, error: 'confirm required' })
-        const resolved = resolveFile(cfg, sourceId, rootId, rel)
+        let resolved
+        try { resolved = resolveFile(cfg, sourceId, rootId, rel) } catch (error) { return json(res, 400, { ok: false, error: error.message }) }
         if (!fs.existsSync(resolved.absPath)) return json(res, 404, { ok: false, error: 'file not found' })
         const trashPath = path.join(TRASH_DIR, timestamp(), sourceId, rootId, rel)
         ensureDir(path.dirname(trashPath))
