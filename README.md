@@ -47,7 +47,7 @@ The local-folder backend needs the drive client running and leaves ordering to t
 ## Dev
 
 ```sh
-node --test test/
+npm test
 node --check index.js
 ```
 
