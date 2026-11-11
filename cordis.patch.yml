@@ -1,0 +1,5 @@
+# dsh-memory-drive bundle patch
+# 把本插件作为一行插入 DSH profile（name 必须等于包名，宿主从 profile 的 node_modules 解析）。
+- insert:
+    - id: memory-drive
+      name: 'dsh-memory-drive'
