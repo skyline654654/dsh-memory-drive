@@ -124,6 +124,20 @@ function isLoopback(req) {
   return addr === '127.0.0.1' || addr === '::1' || addr === '::ffff:127.0.0.1'
 }
 
+/** Reject cross-site browser requests. Local tools without an Origin header still work. */
+function sameSiteRequest(req) {
+  const origin = req.headers.origin
+  if (origin) {
+    try {
+      const host = new URL(origin).hostname
+      if (!(host === '127.0.0.1' || host === 'localhost' || host === '[::1]' || host === '::1')) return false
+    } catch { return false }
+  }
+  const site = req.headers['sec-fetch-site']
+  if (site && site !== 'same-origin' && site !== 'none') return false
+  return true
+}
+
 function readBody(req, limit) {
   return new Promise((resolve, reject) => {
     const chunks = []
@@ -243,6 +257,11 @@ export function apply(ctx, rawConfig) {
 
     const wrap = (handler) => async (req, res) => {
       if (!isLoopback(req)) return json(res, 403, { ok: false, error: 'loopback only' })
+      if (!sameSiteRequest(req)) return json(res, 403, { ok: false, error: 'cross-site request rejected' })
+      if (req.method === 'POST') {
+        const type = String(req.headers['content-type'] || '')
+        if (!type.toLowerCase().startsWith('application/json')) return json(res, 415, { ok: false, error: 'content-type must be application/json' })
+      }
       try { await handler(req, res) } catch (error) {
         logLine('route error', error && error.stack ? error.stack : error)
         if (!res.headersSent) json(res, 500, { ok: false, error: error && error.message ? error.message : String(error) })
